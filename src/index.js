@@ -1,11 +1,17 @@
 'use strict';
 
 var handleRequest = require('./handle_request');
+var utils = require('./utils');
 
 var verbs = ['get', 'post', 'head', 'delete', 'patch', 'put'];
 
 function adapter() {
   return function(config) {
+    var url = config.url.slice(config.baseURL ? config.baseURL.length : 0);
+    var handler = utils.findHandler(this.handlers, config.method, url, config.data);
+    if(!handler && typeof this.originalAdapter === 'function') {
+      return this.originalAdapter(config);
+    }
     // axios >= 0.13.0 only passes the config and expects a promise to be
     // returned. axios < 0.13.0 passes (config, resolve, reject).
     if (arguments.length === 3) {
