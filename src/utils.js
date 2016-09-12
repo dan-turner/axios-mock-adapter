@@ -21,14 +21,14 @@ function find(array, predicate) {
 function findHandler(handlers, method, url, body) {
   return find(handlers[method.toLowerCase()], function(handler) {
     if (typeof handler[0] === 'string') {
-      return url === handler[0] && isBodyMatching(body, handler[4]);
+      return url === handler[0] && isBodyMatching(url, body, handler[4]);
     } else if (handler[0] instanceof RegExp) {
-      return handler[0].test(url) && isBodyMatching(body, handler[4]);
+      return handler[0].test(url) && isBodyMatching(url, body, handler[4]);
     }
   });
 }
 
-function isBodyMatching(body, requiredBody) {
+function isBodyMatching(url, body, requiredBody) {
   if (requiredBody === undefined) {
     return true;
   }
@@ -36,6 +36,9 @@ function isBodyMatching(body, requiredBody) {
   try {
     parsedBody = JSON.parse(body);
   } catch (e) { }
+  if(typeof requiredBody === 'function') {
+    return requiredBody(parsedBody, url);
+  }
   return parsedBody ? eql(parsedBody, requiredBody) : eql(body, requiredBody);
 }
 
